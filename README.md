@@ -67,10 +67,6 @@ Which will open the file in VSCode
 
 **All** work should be done on the testing branch, or even better, branches created specifically for the issue you want to work on.
 
-#### Join the Titanic Google Document 
-
-https://docs.google.com/document/d/1o-3wFioSCVCs3NkYrXDpRvNJ405PRMAJcU_UnG1SwFA/edit
-
 ## Contributing
 
 See [CONTRIBUTING.md](https://github.com/datascienceslugs/dss-titanic/blob/master/CONTRIBUTING.md) for guidelines on modifying the code.
