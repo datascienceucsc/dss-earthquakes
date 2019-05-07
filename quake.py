@@ -6,7 +6,8 @@ from tsfresh.feature_extraction import MinimalFCParameters
 from sklearn.ensemble import RandomForestRegressor
 
 
-series_df = pd.read_csv('train.csv', usecols = ['acoustic_data', 'time_to_failure'])
+series_df = pd.read_csv('train.csv', 
+                        usecols = ['acoustic_data', 'time_to_failure'])
 series_df = series_df.iloc[::100]
 
 num_points = series_df.count
@@ -19,7 +20,11 @@ for i in range(num_points):
 
 series_df['id'] = id_col
 
-acoustic_features = tsf.extract_features(series_df, column_sort = 'time_to_failure', column_value =  'acoustic_data', column_id = 'id', default_fc_parameters = MinimalFCParameters())
+acoustic_features = tsf.extract_features( series_df, 
+                        column_sort = 'time_to_failure', 
+                        column_value =  'acoustic_data',
+                        column_id = 'id',
+                        default_fc_parameters = MinimalFCParameters())
 
 feature_labels = []
 for i in range(num_intervals):
