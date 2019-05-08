@@ -64,8 +64,11 @@ def get_test_predictors(file_directory, col_name, seg_length,
     
     for fname in glob.glob(file_directory):
         seg_df = pd.read_csv(fname)
+        id_col = np.zeroes(seg_length)
+        seg_df['id'] = id_col
+
         temp_predictors = tsf.extract_features(seg_df,
                                                column_value = col_name,
                                                column_id = 'id')
-    
+        test_predictors.append(temp_predictors.iloc[1:])
     return np.array(test_predictors)
