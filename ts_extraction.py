@@ -11,8 +11,7 @@
 import numpy as np
 import pandas as pd
 import tsfresh as tsf
-
-
+import glob
 
 def get_predictors(filepath, col_name, seg_length, skip_amount = 100):
     series_df = pd.read_csv(filepath, 
@@ -43,10 +42,11 @@ def get_predictors(filepath, col_name, seg_length, skip_amount = 100):
 
 
 def get_responses(filepath, col_name, seg_length, skip_amount = 100):
+
     series_df = pd.read_csv(filepath, 
                             usecols = col_name,
-                            dtype = np.float32
-                           )
+                            dtype = np.float32)
+
     series_df = series_df.iloc[::skip_amount]
     num_points = len(series_df.index)
     interval_length = num_points // (seg_length // skip_amount)
@@ -56,3 +56,16 @@ def get_responses(filepath, col_name, seg_length, skip_amount = 100):
     for i in range(num_segs):
         response[i] = series_df.iloc[interval_length * (i+1), 0]
     return response
+
+def get_test_predictors(file_directory, col_name, seg_length, 
+                        skip_amount = 100):
+
+    test_predictors = []
+    
+    for fname in glob.glob(file_directory):
+        seg_df = pd.read_csv(fname)
+        temp_predictors = tsf.extract_features(seg_df,
+                                               column_value = col_name,
+                                               column_id = 'id')
+    
+    return np.array(test_predictors)
