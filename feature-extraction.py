@@ -1,6 +1,7 @@
 #%%
 import pandas as pd
 import numpy as np
+import gc as gc
 from glob import glob
 from tqdm import tqdm
 from sklearn.ensemble import RandomForestRegressor
@@ -58,7 +59,10 @@ def get_test_predictors(file_directory, col_name, seg_len, num_segs):
 
 #%%
 SEG_LEN = 150000      # Length of a segment of test data
-DATA_LEN = 621985673  # Length of the entire time series
+DATA_LEN = 629145480  # Length of the entire time series
+
+# NOTE: according to other kernels I've seen, seems like there is a mistake in DATA_LEN - DATA_LEN / SEG_LEN should be 4194,
+# not 4147
 
 # FIXME: number of segments allocated in get_predictors seems insufficient,
 #  get array OOB error at index 4147
@@ -78,10 +82,10 @@ rf.fit(X_train, y_train)
 
 #%%
 y_fake_pred = rf.predict(X_train)
-accuracy_score(y_train, y_pred)
+accuracy_score(y_train, y_fake_pred)
 
 #%%
-X_test_train = get_test_predictors( SEG_LEN, DATA_LEN)
+X_test_train = get_test_predictors(SEG_LEN, DATA_LEN)
 y_pred = rf.predict()
 
 # Build submission CSV file using results
