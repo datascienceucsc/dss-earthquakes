@@ -4,10 +4,7 @@ import numpy as np
 import gc as gc
 from glob import glob
 from tqdm import tqdm
-from sklearn.preprocessing import Imputer
-from sklearn.ensemble import RandomForestRegressor
-from sklearn.metrics import mean_absolute_error
-
+from sklearn.impute import SimpleImputer
 
 #%%
 def get_predictors(filepath, col_name, seg_len, data_len):
@@ -31,19 +28,20 @@ def get_predictors(filepath, col_name, seg_len, data_len):
         predictors[i, 9] = seg.quantile(q = 0.95)
         predictors[i, 10] = seg.mad()
         predictors[i, 11] = seg.sem()
-    
         i += 1
-
-    return predictors
+    
+    imputer = SimpleImputer(strategy = 'median') 
+    return imputer.fit_transform(predictors)
 
 #%%
 def get_responses(filepath, col_name, seg_len, data_len):
-    num_segs = seg_len // data_len + 1
+    num_segs = data_len // seg_len + 1
     responses = np.empty(num_segs)
     i = 0
     for seg in tqdm(pd.read_csv(filepath, usecols = [col_name], 
                                 chunksize = seg_len, dtype = np.float16)):
         responses[i] = seg.values[-1]
+        i += 1
 
     return responses
 
@@ -68,9 +66,10 @@ def get_test_predictors(file_directory, seg_len, num_segs):
         test_predictors[i, 9] = seg.quantile(q = 0.95)
         test_predictors[i, 10] = seg.mad()
         test_predictors[i, 11] = seg.sem()
-    
         i += 1
-    return test_predictors  
+
+    imputer = SimpleImputer(strategy = 'median')
+    return imputer.fit_transform(test_predictors)
 
 #%%
 SEG_LEN = 150000      # Length of a segment of test data
@@ -79,37 +78,60 @@ NUM_SEGS = 2624       # number of data segments in input/train
 
 #%%
 X_train = get_predictors('input/train.csv', 'acoustic_data', SEG_LEN, DATA_LEN)
-imputer = Imputer(strategy = 'most_frequent')
-X_train = imputer.fit_transform(X_train)
 #%%
 y_train = get_responses('input/train.csv', 'time_to_failure', SEG_LEN, DATA_LEN)
+#%%
+X_test = get_test_predictors('input/test/*.csv', SEG_LEN, NUM_SEGS)
 
+#%%
+y_train.shape
 # saves predictors and responses for easier access in the future
 #%%
 np.savetxt("y_train.csv", y_train, delimiter = ",")
+#%%
 np.savetxt("X_train.csv", X_train, delimiter = ",")
+#%%
+np.savetxt("X_test.csv", X_test, delimiter = ',')
+
+#%%
+from sklearn.ensemble import RandomForestRegressor
+from sklearn.model_selection import GridSearchCV
+from sklearn.metrics import mean_absolute_error
 
 #%%
 rf = RandomForestRegressor(max_depth = 7, max_features = 'sqrt')
 rf.fit(X_train, y_train)
 
 #%%
-y_fake_pred = rf.predict(X_train)
+param_grid = {
+                'n_estimators': [10,20,50,100,200,500],
+                'max_depth'   : [5,10,20, 50, 100, None],
+                'max_features': ['auto', 'sqrt', 'log2']
+              }
+
+rf = RandomForestRegressor
+grid_search = GridSearchCV(rf,  
+                           param_grid = param_grid,
+                           cv = 5,
+                           scoring = mean_absolute_error)
 
 #%%
-mean_absolute_error(y_train, y_fake_pred)
+grid_search.fit(X_train, y_train)
 
 #%%
-X_test_train = get_test_predictors('input/test/*.csv', SEG_LEN, NUM_SEGS)
-X_test_train = imputer.fit_transform(X_test_train)
+grid_search.best_params_
+grid_search.best_score_
 
-y_pred = rf.predict(X_test_train)
+#%%
+y_pred = grid_search.predict(X_test)
+
 
 # Build submission CSV file using results
 #%%
 seg_names = []
 for fname in glob('input/test/*.csv'):
-    seg_names.append(fname[10:21]) # modify to 13:24 if on kaggle kernel
+    seg_names.append(fname[11:21]) # modify to 13:24 if on kaggle kernel
 
+#%%
 submission = pd.DataFrame({'seg_id': seg_names, 'time_to_failure': y_pred})
 submission.to_csv('submission.csv', index = False)
