@@ -85,6 +85,8 @@ X_test = get_test_predictors('input/test/*.csv', SEG_LEN, NUM_SEGS)
 
 #%%
 y_train.shape
+#%%
+X_test.shape
 # saves predictors and responses for easier access in the future
 #%%
 np.savetxt("y_train.csv", y_train, delimiter = ",")
@@ -94,13 +96,23 @@ np.savetxt("X_train.csv", X_train, delimiter = ",")
 np.savetxt("X_test.csv", X_test, delimiter = ',')
 
 #%%
-from sklearn.ensemble import RandomForestRegressor
-from sklearn.model_selection import GridSearchCV
-from sklearn.metrics import mean_absolute_error
+X_train = pd.read_csv("X_train.csv", header = None)
+y_train = pd.read_csv("y_train.csv", header = None)
+X_test = pd.read_csv('X_test.csv', header = None)
 
 #%%
-rf = RandomForestRegressor(max_depth = 7, max_features = 'sqrt')
+from sklearn.ensemble import RandomForestRegressor
+from sklearn.model_selection import GridSearchCV
+from sklearn.metrics import mean_absolute_error, make_scorer
+
+#%%
+rf = RandomForestRegressor(max_depth = 7)
+
+#%%
 rf.fit(X_train, y_train)
+
+#%%
+y_pred = rf.predict(X_test)
 
 #%%
 param_grid = {
@@ -110,20 +122,22 @@ param_grid = {
               }
 
 rf = RandomForestRegressor
-grid_search = GridSearchCV(rf,  
-                           param_grid = param_grid,
-                           cv = 5,
-                           scoring = mean_absolute_error)
+reg = GridSearchCV(rf,  
+                   param_grid = param_grid,
+                   cv = 5,
+                   scoring = make_scorer(mean_absolute_error,
+                                                 greater_is_better= False)
+                  )
 
 #%%
-grid_search.fit(X_train, y_train)
+reg.fit(X_train, y_train)
 
 #%%
-grid_search.best_params_
-grid_search.best_score_
+reg.best_params_
+reg.best_score_
 
 #%%
-y_pred = grid_search.predict(X_test)
+y_pred = reg.predict(X_test)
 
 
 # Build submission CSV file using results
