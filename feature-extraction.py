@@ -6,6 +6,10 @@ from glob import glob
 from tqdm import tqdm
 from sklearn.impute import SimpleImputer
 
+# New import for Fourier Transformation
+from scipy import pi
+import matplotlib.pyplot as plt
+
 #%%
 def get_predictors(filepath, col_name, seg_len, data_len):
     num_features = 12
