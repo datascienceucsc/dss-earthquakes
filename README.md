@@ -58,14 +58,23 @@ Navigate to the folder containing the project and then
 run
 
 ```bash
-$ git checkout testing
-$ git pull origin testing
+$ git checkout [branch you want to work on]
+$ git pull origin [branch you want to work on]
 $ code [file you want to work on]
 ```
 
 Which will open the file in VSCode
 
-**All** work should be done on the testing branch, or even better, branches created specifically for the issue you want to work on.
+**All** work should be done on branches created specifically for the issue you want to work on.
+
+#### Running the project
+
+Source files are all under `src`. To build the features, run `feature-extraction.py`, located in `src/data`. Raw data is not on git due to file size limitations, but you should save it under `data/raw`
+If you modify that script, make sure that it still writes it output to `data/processed`.
+
+Level 1 models are under `src/models` and should write their output to `data/intermediate`
+Level 2 model is in `meta_learner.py` and also in `src/models`. 
+
 
 ## Contributing
 
