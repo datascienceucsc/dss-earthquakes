@@ -68,6 +68,7 @@ Which will open the file in VSCode
 **All** work should be done on branches created specifically for the issue you want to work on.
 
 #### Running the project
+If running in IPyhton/jupyter, make sure the directory in IPython is set to the one containing the script you want to run, otherwise relative pathing will not work properly.
 
 Source files are all under `src`. To build the features, run `feature-extraction.py`, located in `src/data`. Raw data is not on git due to file size limitations, but you should save it under `data/raw`
 If you modify that script, make sure that it still writes it output to `data/processed`.
